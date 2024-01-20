@@ -6,7 +6,7 @@ function SuccessApi(res, statusCode, result, message) {
         message: message
     });
 }
-function FailedApi(res, statusCode, error ) {
+function FailedApi(res, statusCode, error) {
     res.status(statusCode).json({
         status: 'Failure',
         statusCode,

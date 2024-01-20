@@ -11,46 +11,46 @@ const Secret_Key = process.env.SECRET_KEY;
 
 // Configure Nodemailer transporter
 const transporter = nodemailer.createTransport({
-  host: "sandbox.smtp.mailtrap.io",
-  port: 2525,
-  auth: {
-    user: process.env.USER_NAME,
-    pass: process.env.USER_PASS
-  }
+    host: "sandbox.smtp.mailtrap.io",
+    port: 2525,
+    auth: {
+        user: process.env.USER_NAME,
+        pass: process.env.USER_PASS
+    }
 });
 
 // Create a new user
 const createUser = async (req, res) => {
-  try {
-    const { firstName, lastName, email } = req.body;
+    try {
+        const { firstName, lastName, email } = req.body;
 
-    // Validate user input
-    const { error } = validateUser(req.body);
-    if (error) return FailedApi(res, 400, { message: "Validation error", error: error.details[0].message });
+        // Validate user input
+        const { error } = validateUser(req.body);
+        if (error) return FailedApi(res, 400, { message: "Validation error", error: error.details[0].message });
 
-    // Check if the user already exists
-    const existingUser = await User.findOne({ where: { email: email } });
-    if (existingUser) return FailedApi(res, 409, 'Email already registered');
+        // Check if the user already exists
+        const existingUser = await User.findOne({ where: { email: email } });
+        if (existingUser) return FailedApi(res, 409, 'Email already registered');
 
-    // Generate a random password and hash it
-    const randomPassword = uuidv4().replace(/-/g, '').substring(0, 12);
-    const hashedPassword = await bcrypt.hash(randomPassword, 10);
+        // Generate a random password and hash it
+        const randomPassword = uuidv4().replace(/-/g, '').substring(0, 12);
+        const hashedPassword = await bcrypt.hash(randomPassword, 10);
 
-    // Create a new user
-    const newUser = await User.create({
-      firstName: firstName,
-      lastName: lastName,
-      email: email,
-      password: hashedPassword
-    });
-    const userName = `${firstName} ${lastName}`;
+        // Create a new user
+        const newUser = await User.create({
+            firstName: firstName,
+            lastName: lastName,
+            email: email,
+            password: hashedPassword
+        });
+        const userName = `${firstName} ${lastName}`;
 
-    // Send a verification email
-    await transporter.sendMail({
-      from: 'usamatariq0320@gmail.com',
-      to: newUser.email,
-      subject: 'Check Your Credentials',
-      html: `
+        // Send a verification email
+        await transporter.sendMail({
+            from: 'usamatariq0320@gmail.com',
+            to: newUser.email,
+            subject: 'Check Your Credentials',
+            html: `
         <!-- Email template HTML -->
         <!DOCTYPE html>
         <html lang="en">
@@ -130,48 +130,48 @@ const createUser = async (req, res) => {
           </body>
         </html>
       `,
-    });
+        });
 
-    // Send success response
-    SuccessApi(res, 200, { message: 'User created successfully. Check your email for your Account Password.' });
-  } catch (err) {
-    // Handle errors
-    return FailedApi(res, 400, { error: err.message });
-  }
+        // Send success response
+        SuccessApi(res, 200, { message: 'User created successfully. Check your email for your Account Password.' });
+    } catch (err) {
+        // Handle errors
+        return FailedApi(res, 400, { error: err.message });
+    }
 };
 
 // User Signin
 const signin = async (req, res) => {
-  try {
-    const { email, password } = req.body;
+    try {
+        const { email, password } = req.body;
 
-    // Find the existing user by email
-    const existingUser = await User.findOne({ where: { email } });
+        // Find the existing user by email
+        const existingUser = await User.findOne({ where: { email } });
 
-    if (!existingUser) return FailedApi(res, 404, { message: "User Not Found" });
+        if (!existingUser) return FailedApi(res, 404, { message: "User Not Found" });
 
-    // Compare password
-    const comparePassword = await bcrypt.compare(password, existingUser.password);
-    if (!comparePassword) return FailedApi(res, 400, { message: "Invalid Email or Password" });
+        // Compare password
+        const comparePassword = await bcrypt.compare(password, existingUser.password);
+        if (!comparePassword) return FailedApi(res, 400, { message: "Invalid Email or Password" });
 
-    // Adjust payload for the token
-    const payload = { email: existingUser.email, id: existingUser.userId };
+        // Adjust payload for the token
+        const payload = { email: existingUser.email, id: existingUser.userId };
 
-    // Generate JWT token
-    const token = jwt.sign(payload, Secret_Key, { expiresIn: '30d' });
-    console.log("User Login Successfully");
+        // Generate JWT token
+        const token = jwt.sign(payload, Secret_Key, { expiresIn: '30d' });
+        console.log("User Login Successfully");
 
-    // Prepare response
-    const result = { user: existingUser, token, message: "User Login Successfully" };
-    SuccessApi(res, 200, result);
-  } catch (error) {
-    // Handle errors
-    console.error("Signin error:", error);
-    return FailedApi(res, 500, { message: "Internal Server Error" });
-  }
+        // Prepare response
+        const result = { user: existingUser, token, message: "User Login Successfully" };
+        SuccessApi(res, 200, result);
+    } catch (error) {
+        // Handle errors
+        console.error("Signin error:", error);
+        return FailedApi(res, 500, { message: "Internal Server Error" });
+    }
 };
 
 export {
-  createUser,
-  signin
+    createUser,
+    signin
 };

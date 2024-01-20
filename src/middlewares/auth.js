@@ -7,13 +7,13 @@ const Secret_Key = process.env.SECRET_KEY;
 
 const authenticateUser = async (req, res, next) => {
     const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];    
+    const token = authHeader && authHeader.split(' ')[1];
     if (!token) {
         return res.status(401).json({ message: 'Access denied. Token Missing.' });
     }
     try {
         const decoded = jwt.verify(token, Secret_Key);
-        const user = await User.findOne({where: {email:decoded.email}});
+        const user = await User.findOne({ where: { email: decoded.email } });
         // console.log(user)
 
         if (!user) {

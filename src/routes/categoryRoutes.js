@@ -11,7 +11,8 @@ const categoryRouter = express.Router();
 
 // Category routes
 categoryRouter.post('/create', authenticateUser, createCategory);
-categoryRouter.get('/read', getAllCategories);
+categoryRouter.get('/readAll', getAllCategories);
+categoryRouter.get('/read/:id', getAllCategories);
 categoryRouter.put('/update/:id', authenticateUser, updateCategory);
 categoryRouter.delete('/delete/:id', authenticateUser, deleteCategory);
 
